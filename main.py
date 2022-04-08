@@ -27,16 +27,49 @@ home_url = "https://www.udemy.com/"
 udemy_url = "https://www.udemy.com/courses/free/?lang=tr&p=1&sort=popularity"
 
 driver.get(udemy_url)
-time.sleep(10)
-print(driver.title)
-time.sleep(10)
+#time.sleep(10)
+#print(driver.title)
+#time.sleep(10)
 
-with open('page_markup.html','w',encoding='utf_8') as file:
-    file.write(driver.page_source)
+"""
+def extract_text(soup_obj, tag, attribute_name, attribute_value):
+    txt = soup_obj.find(tag, {attribute_name: attribute_value}).text().strip() if soup_obj.find(tag, {attribute_name: attribute_value}) else ''
+    return txt
 
 sort_type = 'popularity'
 for page_number in range(1,4):
     page_url = f'https://www.udemy.com/courses/free/?lang=tr&p={page_number}&sort={sort_type}'
+    driver.get(page_url)
+    time.sleep(5)
+    try:
+        WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
+    except TimeoutException:
+        print('Loading exceeds delay time')
+        break
+    else:
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
+        courses = course_list.find_all('a', {'class': 'udlite-custom-focus-visible browse-course-card--link--3KIkQ'})
+
+
+driver.quit
+"""
+
+
+
+
+try:
+    WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
+except TimeoutException:
+    print('Loading exceeds delay time')
+    #break
+#! html alınca else blogunu kaldır
+else:
+    with open('page_markup.html','w',encoding='utf_8') as file:
+        file.write(driver.page_source)
+finally:
+    driver.quit
+
 
 
 rows = []
@@ -59,6 +92,6 @@ recommended_url = "https://www.udemy.com/courses/free/?lang=tr&sort=recommended"
 udemy_url = "https://www.udemy.com/courses/free/?lang=tr&p=1&sort=popularity"
 popular_url2 = "https://www.udemy.com/courses/free/?lang=tr&p=2&sort=newest"
 
-#page_number = 1
+page_number = 1
 sort_type = 'popularity'
 page_url = f'https://www.udemy.com/courses/free/?lang=tr&p={page_number}&sort={sort_type}'
