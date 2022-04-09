@@ -6,25 +6,32 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver import ChromeOptions
+#from selenium.webdriver import ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from bs4 import BeautifulSoup
 #import requests
 
 #headers_driver = {'User-Agent': 'Mozilla/5.0 (x11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 
+"""
 option = ChromeOptions()
 option.add_argument("--disable-infobars")
 option.add_argument("start-maximized")
 option.add_argument("--disable-extensions")
 option.add_argument("--disable-notifications")
+option.add_argument("--incognito")
+"""
+options = FirefoxOptions()
+options.add_argument("--headless")
 
 
-PATH = (r'C:\Program Files\chromedriver.exe')
-driver = webdriver.Chrome(chrome_options=option, executable_path=PATH)
+#PATH = (r'C:\Program Files\chromedriver.exe')
+PATH = (r'C:\Program Files\geckodriver.exe')
+driver = webdriver.Firefox(executable_path=PATH)
 delay = 15 
 
 home_url = "https://www.udemy.com/"
-udemy_url = "https://www.udemy.com/courses/free/?lang=tr&p=1&sort=popularity"
+udemy_url = "https://www.udemy.com/courses/free/?lang=tr&p=1&sort=recommended"
 
 driver.get(udemy_url)
 #time.sleep(10)
@@ -51,11 +58,9 @@ for page_number in range(1,4):
         course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
         courses = course_list.find_all('a', {'class': 'udlite-custom-focus-visible browse-course-card--link--3KIkQ'})
 
-
 driver.quit
+
 """
-
-
 
 
 try:
