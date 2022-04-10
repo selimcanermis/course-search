@@ -1,7 +1,8 @@
 from encodings import utf_8
 from operator import iadd
 import time
-import pandas as pd # pip install pandas
+from numpy import sort
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -9,144 +10,90 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-#from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from bs4 import BeautifulSoup
-#import requests
 
 #headers_driver = {'User-Agent': 'Mozilla/5.0 (x11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
-
-
-options = Options()
-options.add_argument("start-maximized")
-options.add_argument("--disable-infobars")
-options.add_argument("--disable-extensions")
-options.add_argument("--disable-notifications")
-
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option('excludeSwitches', ['enable-logging'])
-options.add_experimental_option('useAutomationExtension', False)
-options.add_argument('--disable-blink-features=AutomationControlled')
-"""
-options = FirefoxOptions()
-options.add_argument("--headless")
-"""
-
 PATH = (r'C:\Program Files\chromedriver.exe')
-#PATH = (r'C:\Program Files\geckodriver.exe')
-
-s = Service('C:\\Program Files\\chromedriver.exe')
-driver = webdriver.Chrome(executable_path=PATH, options=options)
-#driver = webdriver.Firefox(executable_path=PATH, options=options)
 delay = 15 
 
-home_url = "https://www.udemy.com/"
-udemy_url = "https://www.udemy.com/courses/free/?lang=tr&p=1&sort=popularity"
+class Udemy:
+    def __init__(self):
+        options = Options()
+        options.add_argument("start-maximized")
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-notifications")
 
-driver.get(udemy_url)
-#time.sleep(10)
-#print(driver.title)
-#time.sleep(10)
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument('--disable-blink-features=AutomationControlled')
 
 
-def take_out_text(soup_obj, tag, attribute_name, attribute_value):
-    #txt = soup_obj.find(tag, {attribute_name: attribute_value}).text().strip() if soup_obj.find(tag, {attribute_name: attribute_value}) else ''
-    #print(tag)
-    #print(attribute_name)
-    #print(attribute_value)
+        #s = Service('C:\\Program Files\\chromedriver.exe')
+        self.driver = webdriver.Chrome(executable_path=PATH, options=options)
+        home_url = "https://www.udemy.com/"
+
+        self.course_rows = []
+
+    def selectSortType():
+        sort_type = input("1-Recommended\n2-Popularity\n3-Newest\n0-Exit\n\nPlease select one: ")
+        if (sort_type=="1"):
+            sort_type = "recommended"
+        elif (sort_type=="2"):
+            sort_type = "popularity"
+        elif (sort_type=="3"):
+            sort_type = "mewest"
+        else:
+            return exit
+        return sort_type 
+
+    def scrap(self):
+        sort_type =  selectSortType()
+        for page_number in range(1,3):
+            page_url = f'https://www.udemy.com/courses/free/?lang=tr&p={page_number}&sort={sort_type}'
+            self.driver.get(page_url)
+            time.sleep(5)
+            try:
+                WebDriverWait(self.driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
+            except TimeoutException:
+                print('Loading exceeds delay time')
+                break
+            else:
+                soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+                course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
+                courses = course_list.find_all('div', {'class': 'course-card--container--1QM2W course-card--large--2aYkn'})
+
+                for course in courses:
+                    course_url = '{0}{1}'.format('https://www.udemy.com', course.find('a')['href'])
+                    course_title = course.find('a').text
+                    course_headline = course.find("p",{"class": "udlite-text-sm course-card--course-headline--2DAqq"}).text.strip()
+                    author = course.find("div", {"class": "course-card--instructor-list--nH1OC"}).text.strip()
+                    course_rating = course.find_all("span", {"class": "udlite-sr-only"})[1].text.strip()
+                    number_of_ratings = course.find("span", {"class": "udlite-heading-sm star-rating--rating-number--2o8YM"}).text.strip()
+                    #print(number_of_ratings)
+                    course_detail = course.find_all('span', {'class':'course-card--row--29Y0w'})
+                    course_length = course_detail[0].text
+                    number_of_lectures = course_detail[1].text
+                    difficulity = course_detail[2].text         
+
+                    self.course_rows.append(
+                        [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity]               
+                    )
+
+        columns = ["url","Course Title","Course Headline","Author","Course Rating","Rating","Course Length","Number of Lectures","Difficulity"]
+        df = pd.DataFrame(data=self.course_rows, columns=columns)
+        #df.to_csv('Udemy Free Courses.csv', index=False, sep='\t', encoding='utf-8')
+        df.to_excel(f'Udemy Free Courses - ({sort_type}).xlsx', index=False)
+        print(df)
+
+        self.driver.quit
     
-    txt = soup_obj.find(tag, {attribute_name: attribute_value}).text().strip()
-    print(txt)
-    txt = "selim"
-    print(type(txt))
-    return txt
+    
 
-course_rows = []
-
-sort_type = 'popularity'
-for page_number in range(1,2):
-    page_url = f'https://www.udemy.com/courses/free/?lang=tr&p={page_number}&sort={sort_type}'
-    driver.get(page_url)
-    time.sleep(5)
-    try:
-        WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
-    except TimeoutException:
-        print('Loading exceeds delay time')
-        break
-    else:
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
-        #courses = course_list.find_all('a', {'class': 'udlite-custom-focus-visible browse-course-card--link--3KIkQ'})
-        courses = course_list.find_all('div', {'class': 'course-card--container--1QM2W course-card--large--2aYkn'})
-        print("girdim else")
-        #print(course_list)
-        #print(courses)
-        print(type(courses))
-
-        for course in courses:
-            print("girdim for")
-            course_url = '{0}{1}'.format('https://www.udemy.com', course.find('a')['href'])
-            print(course_url)
-            course_title = course.find('a').text
-            print(course_title)
-            #course_headline = take_out_text(course, 'p', 'class', 'udlite-text-sm course-card--course-headline--2DAqq')            
-            course_headline = soup.find("p",{"class": "udlite-text-sm course-card--course-headline--2DAqq"}).text.strip()
-            print(course_headline)
-            #author = take_out_text(course, 'div', 'class', 'course-card--instructor-list--nH1OC')
-            author = soup.find("div", {"class": "course-card--instructor-list--nH1OC"}).text.strip()
-            print(author)
-            #course_rating = take_out_text(course, 'span', 'data-purpose', 'rating-number')
-            course_rating = soup.find_all("span", {"class": "udlite-sr-only"})[1].text.strip()
-            print(course_rating)
-            #number_of_ratings = take_out_text(course, 'span', 'class', 'udlite-text-xs course-card--reviews-text--12UpL')[1:-1]
-            number_of_ratings = soup.find("span", {"class": "udlite-heading-sm star-rating--rating-number--2o8YM"}).text.strip()
-            print(number_of_ratings)
-            course_detail = course.find_all('div', {'class':'course-card--row--29Y0w'})
-            course_length = course_detail[0].text
-            number_of_lectures = course_detail[1].text
-            difficulity = course_detail[2].text         
-
-            course_rows.append(
-                [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity]               
-            )
+    
 
 
-print(course_rows)
-print(type(course_rows))
-
-
-driver.quit
-
-
-
-"""
-try:
-    WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
-    driver.save_screenshot("udemy.png")
-except TimeoutException:
-    print('Loading exceeds delay time')
-    #break
-#! html alınca else blogunu kaldır
-else:
-    with open('page_markup.html','w',encoding='utf_8') as file:
-        file.write(driver.page_source)
-finally:
-    driver.quit
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#request = requests.get(login_url, headers=headers_driver)
 
 #* FREE COURSES
 newest_url = "https://www.udemy.com/courses/free/?lang=tr&sort=newest"
