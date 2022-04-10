@@ -31,36 +31,27 @@ class Udemy:
 
 
         #s = Service('C:\\Program Files\\chromedriver.exe')
-        self.driver = webdriver.Chrome(executable_path=PATH, options=options)
-        home_url = "https://www.udemy.com/"
+        driver = webdriver.Chrome(executable_path=PATH, options=options)
+        self.home_url = "https://www.udemy.com/"
 
         self.course_rows = []
 
-    def selectSortType():
-        sort_type = input("1-Recommended\n2-Popularity\n3-Newest\n0-Exit\n\nPlease select one: ")
-        if (sort_type=="1"):
-            sort_type = "recommended"
-        elif (sort_type=="2"):
-            sort_type = "popularity"
-        elif (sort_type=="3"):
-            sort_type = "mewest"
-        else:
-            return exit
-        return sort_type 
+        sort_type =  self.selectSortType()
+        self.scrap(sort_type, driver)
+        driver.quit
 
-    def scrap(self):
-        sort_type =  selectSortType()
+    def scrap(self, sort_type, driver):
         for page_number in range(1,3):
             page_url = f'https://www.udemy.com/courses/free/?lang=tr&p={page_number}&sort={sort_type}'
-            self.driver.get(page_url)
+            driver.get(page_url)
             time.sleep(5)
             try:
-                WebDriverWait(self.driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
+                WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
             except TimeoutException:
                 print('Loading exceeds delay time')
                 break
             else:
-                soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
                 course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
                 courses = course_list.find_all('div', {'class': 'course-card--container--1QM2W course-card--large--2aYkn'})
 
@@ -81,26 +72,33 @@ class Udemy:
                         [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity]               
                     )
 
-        columns = ["url","Course Title","Course Headline","Author","Course Rating","Rating","Course Length","Number of Lectures","Difficulity"]
+        columns = ["url","Course Title","Course Headline","Author","Course Rating","Rating","Course Length","Number of Lessons","Difficulity"]
         df = pd.DataFrame(data=self.course_rows, columns=columns)
         #df.to_csv('Udemy Free Courses.csv', index=False, sep='\t', encoding='utf-8')
         df.to_excel(f'Udemy Free Courses - ({sort_type}).xlsx', index=False)
         print(df)
 
-        self.driver.quit
-    
-    
 
-    
+    def selectSortType(self):
+        self.sort_type = input("1-Recommended\n2-Popularity\n3-Newest\n4-Highest Rated\n0-Exit\n\nPlease select one: ")
+        if (self.sort_type=="1"):
+            self.sort_type = "recommended"
+        elif (self.sort_type=="2"):
+            self.sort_type = "popularity"
+        elif (self.sort_type=="3"):
+            self.sort_type = "newest"
+        elif (self.sort_type=="4"):
+            self.sort_type = "highest-rated"
+        else:
+            sort_type = "exit"
+        return self.sort_type 
 
+udemy_course = Udemy()
 
+#! MENU SCRIPT YAZILACAK
 
-#* FREE COURSES
-newest_url = "https://www.udemy.com/courses/free/?lang=tr&sort=newest"
-recommended_url = "https://www.udemy.com/courses/free/?lang=tr&sort=recommended"
-udemy_url = "https://www.udemy.com/courses/free/?lang=tr&p=1&sort=popularity"
-popular_url2 = "https://www.udemy.com/courses/free/?lang=tr&p=2&sort=newest"
+#! FREE COURSE
 
-page_number = 1
-sort_type = 'popularity'
-page_url = f'https://www.udemy.com/courses/free/?lang=tr&p={page_number}&sort={sort_type}'
+#! KELLİMEYE GÖRE ARAMA YAPILACAK
+
+#! TR - ENG - ALL SEÇMELİ OLACAK
