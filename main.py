@@ -48,7 +48,16 @@ class Udemy:
         driver.get(page_number_url)
         time.sleep(5)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        pageNumber = soup.find('span', {'class': 'udlite-heading-sm pagination--page--1H0A2'}).text
+        #* Sayfa sayısı 3 taneden fazla ise son sayfa span tagi içinde yazılıyor.
+        if(soup.find('span', {'class': 'udlite-heading-sm pagination--page--1H0A2'})):
+            pageNumber = soup.find('span', {'class': 'udlite-heading-sm pagination--page--1H0A2'}).text
+        #* Sayfa sayısı 3 taneden fazla değilse span tagi olmuyor onun yerine a tagleri oluyor.
+        elif(soup.find('div', {'class': 'pagination--container--39ouY'})):
+            pageNumber = soup.find('div', {'class': 'pagination--container--39ouY'}).find_all('a')
+            pageNumber= int(len(pageNumber))-2
+        #* Sayfa sayısı 1 taneyse direkt pagination divi ortadan kalkıyor.
+        else:
+            pageNumber = 1
         driver.quit
         
         return pageNumber
@@ -57,7 +66,7 @@ class Udemy:
         for page_number in range(1,int(pageNumber)+1):
             page_url = f'https://www.udemy.com/courses/free/?lang={lang}&p={page_number}&sort={sort_type}'
             driver.get(page_url)
-            time.sleep(5)
+            time.sleep(4)
             try:
                 WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
             except TimeoutException:
@@ -67,9 +76,8 @@ class Udemy:
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
                 courses = course_list.find_all('div', {'class': 'course-card--container--1QM2W course-card--large--2aYkn'})
-                #pageNumber = soup.find('span', {'class': 'udlite-heading-sm pagination--page--1H0A2'}).text
-                
-                #print(pageNumber)
+                result_number = soup.find('span', {'class':'udlite-heading-md filter-panel--item-count--2JGx3'}).text
+
 
                 for course in courses:
                     course_url = '{0}{1}'.format('https://www.udemy.com', course.find('a')['href'])
@@ -95,6 +103,7 @@ class Udemy:
         #df.to_csv('Udemy Free Courses.csv', index=False, sep='\t', encoding='utf-8')
         df.to_excel(f'Udemy Free ({lang}) - ({sort_type}).xlsx', index=False)
         print(df)
+        print(f"\nToplam {result_number} başarıyla kaydedildi.")
         
 
 
