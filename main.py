@@ -133,10 +133,73 @@ class Udemy:
 
 udemy_course = Udemy()
 
+#! PAGE NUMBER RESULT/15 ŞEKLİNDE DE BULUNABİLİR
+
 #! MENU SCRIPT YAZILACAK
 
-#! FREE COURSE
+#* YAŞADIK KRAL ONU DA YAŞADIK
+#TODO FREE COURSE
 
 #! KELLİMEYE GÖRE ARAMA YAPILACAK
+#! KELİMEYE GÖRE ARAMADA FİYAT SATIRI DA EKLENECEK
+#? ESKİ FİYAT (İNDİRİM ÖNCESİ) DİKKATE ALINACAK MI?????
+#! KELİMEYE GÖRE ARAMADA 10.000+ SONUÇ DÖNDÜRÜYOR 89+ SAYFA !!!!!
+#! TOP 50 YAPILABİLİR
 
-#! TR - ENG - ALL SEÇMELİ OLACAK
+
+#* YAŞADIK KRAL ONU DA YAŞADIK
+#TODO TR - ENG - ALL SEÇMELİ OLACAK
+
+
+"""
+#! HEPSİ (DEFAULT) EN ALAKALI SIRALAMA İLE SIRALANMIŞTIR.
+#? tek kelime arama
+#* taslak url 
+#* https://www.udemy.com/courses/search/?src=ukw&q={aranan}
+
+aranan kelime (python) url
+https://www.udemy.com/courses/search/?src=ukw&q=python
+
+aranan kelime (java) url
+https://www.udemy.com/courses/search/?src=ukw&q=java
+
+aranan kelime (ingilizce) url
+https://www.udemy.com/courses/search/?src=ukw&q=ingilizce
+
+#? iki kelime arama
+#* taslak url 
+#* https://www.udemy.com/courses/search/?src=ukw&q={aranan+kelime}
+aranan kelime (python django) url
+https://www.udemy.com/courses/search/?src=ukw&q=python+django
+
+aranan kelime (java programming) url
+https://www.udemy.com/courses/search/?src=ukw&q=java+programming
+
+#? üç kelime arama
+#* taslak url 
+#* https://www.udemy.com/courses/search/?src=ukw&q={aranan+üç+kelime}
+
+aranan kelime (ingilizce yds kursu)
+https://www.udemy.com/courses/search/?src=ukw&q=ingilizce+yds+kursu
+
+
+#! EN FAZLA YORUM ALAN SIRALAMASI
+https://www.udemy.com/courses/search/?q=python&sort=most-reviewed&src=ukw
+#* https://www.udemy.com/courses/search/?q={aranan}&sort={most-reviewed}&src=ukw
+https://www.udemy.com/courses/search/?q=python+django&sort=most-reviewed&src=ukw
+#* https://www.udemy.com/courses/search/?q={aranan+kelime}&sort={most-reviewed}&src=ukw
+#! EN ALAKALI SIRALAMASI
+https://www.udemy.com/courses/search/?q=python&sort=relevance&src=ukw
+#* https://www.udemy.com/courses/search/?q={aranan}&sort={relevance}&src=ukw
+#! EN YÜKSEK PUAN ALAN SIRALAMASI
+https://www.udemy.com/courses/search/?q=python&sort=highest-rated&src=ukw
+#* https://www.udemy.com/courses/search/?q={aranan}&sort={highest-rated}&src=ukw
+#! EN YÜKSEK PUAN ALAN SIRALAMASI
+https://www.udemy.com/courses/search/?q=python&sort=newest&src=ukw
+#* https://www.udemy.com/courses/search/?q={aranan}&sort={newest}&src=ukw
+
+
+#! EN SON DİL DE SEÇİLMİŞ HALİ SON URL
+https://www.udemy.com/courses/search/?lang=tr&q=python+django&sort=most-reviewed&src=ukw
+#* https://www.udemy.com/courses/search/?lang={tr}&q={aranan+kelime}&sort={sort_type}&src=ukw
+"""
