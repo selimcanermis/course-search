@@ -36,13 +36,26 @@ class Udemy:
 
         self.course_rows = []
 
+        lang = self.selectLanguage()
         sort_type =  self.selectSortType()
-        self.scrap(sort_type, driver)
+        page_number_url = f'https://www.udemy.com/courses/free/?lang={lang}&p=1&sort={sort_type}'
+        pageNumber = self.getPageNumber(driver, page_number_url)
+        
+        self.scrap(sort_type, lang, pageNumber, driver)
         driver.quit
 
-    def scrap(self, sort_type, driver):
-        for page_number in range(1,3):
-            page_url = f'https://www.udemy.com/courses/free/?lang=tr&p={page_number}&sort={sort_type}'
+    def getPageNumber(self, driver, page_number_url):
+        driver.get(page_number_url)
+        time.sleep(5)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        pageNumber = soup.find('span', {'class': 'udlite-heading-sm pagination--page--1H0A2'}).text
+        driver.quit
+        
+        return pageNumber
+
+    def scrap(self, sort_type, lang, pageNumber, driver):
+        for page_number in range(1,int(pageNumber)+1):
+            page_url = f'https://www.udemy.com/courses/free/?lang={lang}&p={page_number}&sort={sort_type}'
             driver.get(page_url)
             time.sleep(5)
             try:
@@ -54,6 +67,9 @@ class Udemy:
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
                 courses = course_list.find_all('div', {'class': 'course-card--container--1QM2W course-card--large--2aYkn'})
+                #pageNumber = soup.find('span', {'class': 'udlite-heading-sm pagination--page--1H0A2'}).text
+                
+                #print(pageNumber)
 
                 for course in courses:
                     course_url = '{0}{1}'.format('https://www.udemy.com', course.find('a')['href'])
@@ -72,11 +88,14 @@ class Udemy:
                         [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity]               
                     )
 
+
+
         columns = ["url","Course Title","Course Headline","Author","Course Rating","Rating","Course Length","Number of Lessons","Difficulity"]
         df = pd.DataFrame(data=self.course_rows, columns=columns)
         #df.to_csv('Udemy Free Courses.csv', index=False, sep='\t', encoding='utf-8')
-        df.to_excel(f'Udemy Free Courses - ({sort_type}).xlsx', index=False)
+        df.to_excel(f'Udemy Free ({lang}) - ({sort_type}).xlsx', index=False)
         print(df)
+        
 
 
     def selectSortType(self):
@@ -91,7 +110,17 @@ class Udemy:
             self.sort_type = "highest-rated"
         else:
             sort_type = "exit"
-        return self.sort_type 
+        return self.sort_type
+
+    def selectLanguage(self):
+        self.lang = input("1-Türkçe\n2-English\n0-Exit\n\nPlease select one: ")
+        if(self.lang=="1"):
+            self.lang = "tr"
+        elif(self.lang=="2"):
+            self.lang = "en"
+        else:
+            lang = "exit"
+        return self.lang
 
 udemy_course = Udemy()
 
