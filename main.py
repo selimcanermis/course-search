@@ -41,19 +41,21 @@ class Udemy:
         price = self.getIsFree()
         if (price=="free"):
             sort_type =  self.selectSortType()
+            page_number_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p=1&sort={sort_type}'
+            pageNumber = self.getPageNumber(driver, page_number_url)
+            self.freeScrap(price, lang, pageNumber, sort_type, driver)
+            driver.quit
         else:
             keyword = self.getKeyword()
             sort_type =  self.selectSortType()
-        page_number_url = f'https://www.udemy.com/courses/free/?lang={lang}&p=1&sort={sort_type}'
-        pageNumber = self.getPageNumber(driver, page_number_url)
+            page_number_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p=1&q={keyword}&sort={sort_type}&src=ukw'
+            self.searchScrap(price, lang, pageNumber, sort_type, keyword, driver)
+            driver.quit
 
-
-        deneme_url = f'https://www.udemy.com/courses/search/?lang={lang}&p=1&q={keyword}&sort={sort_type}&src=ukw'
-        driver.get(deneme_url)
-        time.sleep(30)
+        #page_number_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p=1&q={keyword}&sort={sort_type}&src=ukw'
+        #driver.get(page_number_url)
+        #time.sleep(30)
         
-        #self.scrap(price, sort_type, lang, pageNumber, driver)
-        driver.quit
 
     def getPageNumber(self, driver, page_number_url):
         driver.get(page_number_url)
@@ -71,9 +73,13 @@ class Udemy:
             pageNumber = 1
         driver.quit
         
-        return pageNumber
+        if(int(pageNumber)<=10):
+            return pageNumber
+        else:
+            pageNumber = "10"
+            return pageNumber
 
-    def scrap(self, price, lang, pageNumber, sort_type, driver):
+    def freeScrap(self, price, lang, pageNumber, sort_type, driver):
         for page_number in range(1,int(pageNumber)+1):
             page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&sort={sort_type}'
             driver.get(page_url)
@@ -107,16 +113,64 @@ class Udemy:
                         [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity]               
                     )
 
+        self.freeRegister(self.course_rows, lang, sort_type)
+
+    def searchScrap(self, price, lang, pageNumber, sort_type, keyword, driver):
+        for page_number in range(1,int(pageNumber)+1):
+            page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&q={keyword}&sort={sort_type}&src=ukw'
+            driver.get(page_url)
+            time.sleep(4)
+            try:
+                WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
+            except TimeoutException:
+                print('Loading exceeds delay time')
+                break
+            else:
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+                course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
+                courses = course_list.find_all('div', {'class': 'course-card--main-content--2XqiY course-card--has-price-text--1c0ze'})
+                #result_number = soup.find('span', {'class':'udlite-heading-md filter-panel--item-count--2JGx3'}).text
 
 
-        columns = ["url","Course Title","Course Headline","Author","Course Rating","Rating","Course Length","Number of Lessons","Difficulity"]
-        df = pd.DataFrame(data=self.course_rows, columns=columns)
-        #df.to_csv('Udemy Free Courses.csv', index=False, sep='\t', encoding='utf-8')
+                for course in courses:
+                    course_url = '{0}{1}'.format('https://www.udemy.com', course.find('a')['href'])
+                    course_title = course.find('a').text
+                    course_headline = course.find("p",{"class": "udlite-text-sm course-card--course-headline--2DAqq"}).text.strip()
+                    author = course.find("div", {"class": "course-card--instructor-list--nH1OC"}).text.strip()
+                    course_rating = course.find_all("span", {"class": "udlite-sr-only"})[1].text.strip()
+                    number_of_ratings = course.find("span", {"class": "udlite-heading-sm star-rating--rating-number--2o8YM"}).text.strip()
+                    #print(number_of_ratings)
+                    course_detail = course.find_all('span', {'class':'course-card--row--29Y0w'})
+                    course_length = course_detail[0].text
+                    number_of_lectures = course_detail[1].text
+                    difficulity = course_detail[2].text
+
+                    current_price = course.find_all("span", {"class": "udlite-sr-only"})[2].find("span").text.strip()
+                    orijinal_price = course.find_all("span", {"class": "udlite-sr-only"})[3].find("span").text.strip()   
+
+                    print(current_price)  
+                    print(orijinal_price)  
+                    print("-"*50)  
+
+                    self.course_rows.append(
+                        [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity, current_price, orijinal_price]               
+                    )
+
+        self.searchRegister(self.course_rows, lang, sort_type, keyword)
+
+    def freeRegister(self, course_rows, lang, sort_type):
+        free_columns = ["url","Course Title","Course Headline","Author","Course Rating","Rating","Course Length","Number of Lessons","Difficulity"]
+        df = pd.DataFrame(data=self.course_rows, columns=free_columns)
         df.to_excel(f'Udemy Free ({lang}) - ({sort_type}).xlsx', index=False)
         print(df)
-        print(f"\nToplam {result_number} başarıyla kaydedildi.")
-        
+        print("Başarıyla kaydedildi.")
 
+    def searchRegister(self,course_rows, lang, sort_type, keyword):
+        search_columns = ["url","Course Title","Course Headline","Author","Course Rating","Rating","Course Length","Number of Lessons","Difficulity","Current Price","Orijinal Price"]
+        df = pd.DataFrame(data=self.course_rows, columns=search_columns)
+        df.to_excel(f'Udemy-{keyword}-({lang})-({sort_type}).xlsx', index=False)
+        print(df)
+        print("Başarıyla kaydedildi.")
 
     def selectSortType(self):
         self.sort_type = input("1-Recommended\n2-Popularity\n3-Newest\n4-Highest Rated\n0-Exit\n\nPlease select one: ")
@@ -160,6 +214,10 @@ class Udemy:
         return self.price
 
 udemy_course = Udemy()
+
+
+
+
 
 #! PAGE NUMBER RESULT/15 ŞEKLİNDE DE BULUNABİLİR
 
