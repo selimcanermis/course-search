@@ -49,6 +49,7 @@ class Udemy:
             keyword = self.getKeyword()
             sort_type =  self.selectSortType()
             page_number_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p=1&q={keyword}&sort={sort_type}&src=ukw'
+            pageNumber = self.getPageNumber(driver, page_number_url)
             self.searchScrap(price, lang, pageNumber, sort_type, keyword, driver)
             driver.quit
 
@@ -145,8 +146,8 @@ class Udemy:
                     number_of_lectures = course_detail[1].text
                     difficulity = course_detail[2].text
 
-                    current_price = course.find_all("span", {"class": "udlite-sr-only"})[2].find("span").text.strip()
-                    orijinal_price = course.find_all("span", {"class": "udlite-sr-only"})[3].find("span").text.strip()   
+                    current_price = course.find_all("span", {"class": "udlite-sr-only"})[2].text.strip()
+                    orijinal_price = course.find_all("span", {"class": "udlite-sr-only"})[3].text.strip()   
 
                     print(current_price)  
                     print(orijinal_price)  
