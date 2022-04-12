@@ -1,3 +1,4 @@
+from ast import keyword
 from encodings import utf_8
 from operator import iadd
 import time
@@ -37,11 +38,21 @@ class Udemy:
         self.course_rows = []
 
         lang = self.selectLanguage()
-        sort_type =  self.selectSortType()
+        price = self.getIsFree()
+        if (price=="free"):
+            sort_type =  self.selectSortType()
+        else:
+            keyword = self.getKeyword()
+            sort_type =  self.selectSortType()
         page_number_url = f'https://www.udemy.com/courses/free/?lang={lang}&p=1&sort={sort_type}'
         pageNumber = self.getPageNumber(driver, page_number_url)
+
+
+        deneme_url = f'https://www.udemy.com/courses/search/?lang={lang}&p=1&q={keyword}&sort={sort_type}&src=ukw'
+        driver.get(deneme_url)
+        time.sleep(30)
         
-        self.scrap(sort_type, lang, pageNumber, driver)
+        #self.scrap(price, sort_type, lang, pageNumber, driver)
         driver.quit
 
     def getPageNumber(self, driver, page_number_url):
@@ -62,9 +73,9 @@ class Udemy:
         
         return pageNumber
 
-    def scrap(self, sort_type, lang, pageNumber, driver):
+    def scrap(self, price, lang, pageNumber, sort_type, driver):
         for page_number in range(1,int(pageNumber)+1):
-            page_url = f'https://www.udemy.com/courses/free/?lang={lang}&p={page_number}&sort={sort_type}'
+            page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&sort={sort_type}'
             driver.get(page_url)
             time.sleep(4)
             try:
@@ -118,7 +129,7 @@ class Udemy:
         elif (self.sort_type=="4"):
             self.sort_type = "highest-rated"
         else:
-            sort_type = "exit"
+            self.sort_type = "exit"
         return self.sort_type
 
     def selectLanguage(self):
@@ -128,8 +139,25 @@ class Udemy:
         elif(self.lang=="2"):
             self.lang = "en"
         else:
-            lang = "exit"
+            self.lang = "exit"
         return self.lang
+
+    def getKeyword(self):
+        self.keyword = input("Please enter a word: ")
+        #self.keyword = keyword.replace(" ","+")
+
+        return self.keyword
+
+    def getIsFree(self):
+        param = input("1- Free Courses\n2- Search Courses\n3- Exit\n\nPlease select one: ")
+        if(param=="1"):
+            self.price = "free"
+        elif(param=="2"):
+            self.price = "search"
+        else:
+            self.price = 0
+
+        return self.price
 
 udemy_course = Udemy()
 
@@ -201,5 +229,8 @@ https://www.udemy.com/courses/search/?q=python&sort=newest&src=ukw
 
 #! EN SON DİL DE SEÇİLMİŞ HALİ SON URL
 https://www.udemy.com/courses/search/?lang=tr&q=python+django&sort=most-reviewed&src=ukw
-#* https://www.udemy.com/courses/search/?lang={tr}&q={aranan+kelime}&sort={sort_type}&src=ukw
+#* https://www.udemy.com/courses/search/?lang={tr}&p=2&q={aranan+kelime}&sort={sort_type}&src=ukw
+
+'https://www.udemy.com/courses/free/?lang={lang}&p={page_number}&sort={sort_type}'
+
 """
