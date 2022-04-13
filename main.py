@@ -146,12 +146,23 @@ class Udemy:
                     number_of_lectures = course_detail[1].text
                     difficulity = course_detail[2].text
 
-                    current_price = course.find_all("span", {"class": "udlite-sr-only"})[2].text.strip()
-                    orijinal_price = course.find_all("span", {"class": "udlite-sr-only"})[3].text.strip()   
+                    current_price = course.find("div", {"class": "price-text--price-part--2npPm course-card--discount-price--1bQ5Q udlite-heading-md"})
+                    current_price = current_price.find_all("span")[2].text.strip()
+                    orijinal_price = course.find("div", {"class": "price-text--price-part--2npPm price-text--original-price--1sDdx course-card--list-price--3RTcj udlite-text-sm"})
+                    orijinal_price = orijinal_price.find_all("span")[2].text.strip()
 
                     print(current_price)  
                     print(orijinal_price)  
                     print("-"*50)  
+
+
+                    current_price = current_price[1:]
+                    current_price = current_price.replace(',','.')
+                    print(current_price)
+                    print('*'*50)
+
+                    sel
+                    
 
                     self.course_rows.append(
                         [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity, current_price, orijinal_price]               
