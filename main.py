@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from bs4 import BeautifulSoup
+from sqlalchemy import null
 
 #headers_driver = {'User-Agent': 'Mozilla/5.0 (x11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 PATH = (r'C:\Program Files\chromedriver.exe')
@@ -77,20 +78,25 @@ class Udemy:
         if(int(pageNumber)<=10):
             return pageNumber
         else:
-            pageNumber = "10"
+            #* eğer sayfa sayısı 10'dan fazlaysa 3 alsın
+            pageNumber = "2"
             return pageNumber
 
     def freeScrap(self, price, lang, pageNumber, sort_type, driver):
         for page_number in range(1,int(pageNumber)+1):
             page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&sort={sort_type}'
+            print("url aldım")
             driver.get(page_url)
+            print("url girdim")
             time.sleep(4)
             try:
+                print("denedim")
                 WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
             except TimeoutException:
                 print('Loading exceeds delay time')
                 break
             else:
+                print("elsedeyim")
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
                 courses = course_list.find_all('div', {'class': 'course-card--container--1QM2W course-card--large--2aYkn'})
@@ -118,16 +124,28 @@ class Udemy:
 
     def searchScrap(self, price, lang, pageNumber, sort_type, keyword, driver):
         kursayısı = 0
+        print(pageNumber)
         for page_number in range(1,int(pageNumber)+1):
-            page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&q={keyword}&sort={sort_type}&src=ukw'
+            print("girdim")
+            print(page_number)
+            print(keyword)
+            time.sleep(5)
+            if (page_number==1):
+                page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&q={keyword}&sort={sort_type}&src=ukw'
+            else:
+                page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&q={keyword}&sort={sort_type}&src=ukw'
+            print("url aldım")
+            print(page_url)
             driver.get(page_url)
-            time.sleep(4)
+            print("url girdim")
+            time.sleep(5)
             try:
                 WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
             except TimeoutException:
                 print('Loading exceeds delay time')
                 break
             else:
+                print("elsedeyim")
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
                 #courses = course_list.find_all('div', {'class': 'course-card--main-content--2XqiY course-card--has-price-text--1c0ze'})
@@ -135,23 +153,34 @@ class Udemy:
                 #result_number = soup.find('span', {'class':'udlite-heading-md filter-panel--item-count--2JGx3'}).text
 
 
-                for course in courses:
+                for course in courses[:-1]:
                     course_url = '{0}{1}'.format('https://www.udemy.com', course.find('a')['href'])
                     course_title = course.find('a').text
                     course_headline = course.find("p",{"class": "udlite-text-sm course-card--course-headline--2DAqq"}).text.strip()
                     author = course.find("div", {"class": "course-card--instructor-list--nH1OC"}).text.strip()
                     course_rating = course.find_all("span", {"class": "udlite-sr-only"})[1].text.strip()
                     number_of_ratings = course.find("span", {"class": "udlite-heading-sm star-rating--rating-number--2o8YM"}).text.strip()
-                    #print(number_of_ratings)
                     course_detail = course.find_all('span', {'class':'course-card--row--29Y0w'})
                     course_length = course_detail[0].text
                     number_of_lectures = course_detail[1].text
                     difficulity = course_detail[2].text
 
-                    current_price = course.find("div", {"class": "price-text--price-part--2npPm course-card--discount-price--1bQ5Q udlite-heading-md"})
-                    current_price = current_price.find_all("span")[2].text.strip()
-                    orijinal_price = course.find("div", {"class": "price-text--price-part--2npPm price-text--original-price--1sDdx course-card--list-price--3RTcj udlite-text-sm"})
-                    orijinal_price = orijinal_price.find_all("span")[2].text.strip()
+                    #* Eğer güncel fiyatı varsa al yoksa - ver
+                    if(course.find("div", {"class": "price-text--price-part--2npPm course-card--discount-price--1bQ5Q udlite-heading-md"})):
+                        current_price = course.find("div", {"class": "price-text--price-part--2npPm course-card--discount-price--1bQ5Q udlite-heading-md"})
+                        if(current_price.find_all("span")[2]):
+                            current_price = current_price.find_all("span")[2].text.strip()
+                        else:
+                            current_price = "Ucretsiz"
+                    else:
+                        current_price = "-"
+                    
+                    #* Eğer indirimsiz, orijinal fiyatı varsa al yoksa null ver
+                    if(course.find("div", {"class": "price-text--price-part--2npPm price-text--original-price--1sDdx course-card--list-price--3RTcj udlite-text-sm"})):
+                        orijinal_price = course.find("div", {"class": "price-text--price-part--2npPm price-text--original-price--1sDdx course-card--list-price--3RTcj udlite-text-sm"})
+                        orijinal_price = orijinal_price.find_all("span")[2].text.strip()
+                    else:
+                        orijinal_price = "-"
 
                     kursayısı +=1
                     print(kursayısı)
@@ -170,14 +199,19 @@ class Udemy:
                     print("-"*50)  
 
 
-                    current_price = current_price[1:]
-                    current_price = current_price.replace(',','.')
+                    current_price_int = current_price[1:]
+                    current_price_int = current_price_int.replace(',','.')
                     #print(current_price)
                     print('*'*50)
 
                     self.course_rows.append(
                         [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity, current_price, orijinal_price]               
                     )
+                    print("fordan çıkamadım kaldım be")
+                    print(len(courses))
+                print("fordan çıktım babacım")
+                print("kurs boyutu")
+                print(len(courses))
 
         self.searchRegister(self.course_rows, lang, sort_type, keyword)
 
