@@ -117,6 +117,7 @@ class Udemy:
         self.freeRegister(self.course_rows, lang, sort_type)
 
     def searchScrap(self, price, lang, pageNumber, sort_type, keyword, driver):
+        kursayısı = 0
         for page_number in range(1,int(pageNumber)+1):
             page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&q={keyword}&sort={sort_type}&src=ukw'
             driver.get(page_url)
@@ -129,7 +130,8 @@ class Udemy:
             else:
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 course_list = soup.find('div', {'class': 'course-list--container--3zXPS'})
-                courses = course_list.find_all('div', {'class': 'course-card--main-content--2XqiY course-card--has-price-text--1c0ze'})
+                #courses = course_list.find_all('div', {'class': 'course-card--main-content--2XqiY course-card--has-price-text--1c0ze'})
+                courses = course_list.find_all('div', {'class': 'popper--popper--2r2To'})
                 #result_number = soup.find('span', {'class':'udlite-heading-md filter-panel--item-count--2JGx3'}).text
 
 
@@ -151,18 +153,27 @@ class Udemy:
                     orijinal_price = course.find("div", {"class": "price-text--price-part--2npPm price-text--original-price--1sDdx course-card--list-price--3RTcj udlite-text-sm"})
                     orijinal_price = orijinal_price.find_all("span")[2].text.strip()
 
-                    print(current_price)  
-                    print(orijinal_price)  
+                    kursayısı +=1
+                    print(kursayısı)
+                    print(course_url)
+                    print(course_title)
+                    print(course_headline)
+                    print(author)
+                    print(course_rating)
+                    print(number_of_ratings)
+                    print(course_detail)
+                    print(course_length)
+                    print(number_of_lectures)
+                    print(difficulity)
+                    print(current_price)
+                    print(orijinal_price)
                     print("-"*50)  
 
 
                     current_price = current_price[1:]
                     current_price = current_price.replace(',','.')
-                    print(current_price)
+                    #print(current_price)
                     print('*'*50)
-
-                    sel
-                    
 
                     self.course_rows.append(
                         [course_url, course_title, course_headline, author, course_rating, number_of_ratings, course_length, number_of_lectures, difficulity, current_price, orijinal_price]               
