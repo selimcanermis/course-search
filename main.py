@@ -48,7 +48,7 @@ class Udemy:
             driver.quit
         else:
             keyword = self.getKeyword()
-            sort_type =  self.selectSortType()
+            sort_type =  self.selectSortType(price)
             page_number_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p=1&q={keyword}&sort={sort_type}&src=ukw'
             pageNumber = self.getPageNumber(driver, page_number_url)
             self.searchScrap(price, lang, pageNumber, sort_type, keyword, driver)
@@ -127,20 +127,25 @@ class Udemy:
         print(pageNumber)
         for page_number in range(1,int(pageNumber)+1):
             print("girdim")
-            print(page_number)
-            print(keyword)
-            time.sleep(5)
+            print("page number: ", page_number)
+            print("keyword: ", keyword)
+            time.sleep(4)
             if (page_number==1):
                 page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&q={keyword}&sort={sort_type}&src=ukw'
             else:
-                page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&q={keyword}&sort={sort_type}&src=ukw'
+                #page_url = f'https://www.udemy.com/courses/{price}/?lang={lang}&p={page_number}&q={keyword}&sort={sort_type}&src=ukw'
+                page_url = f'https://www.udemy.com/courses/search/?lang={lang}&p={page_number}&q={keyword}&sort={sort_type}&src=ukw'
+                f'https://www.udemy.com/courses/search/?lang=tr&p=2&q=sql&sort=popularity&src=ukw'
             print("url aldım")
             print(page_url)
             driver.get(page_url)
             print("url girdim")
             time.sleep(5)
+            print("bekledim")
             try:
+                print("try deniyorum")
                 WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'course-list--container--3zXPS')))
+                print("try dedim durdum")
             except TimeoutException:
                 print('Loading exceeds delay time')
                 break
@@ -159,7 +164,10 @@ class Udemy:
                     course_headline = course.find("p",{"class": "udlite-text-sm course-card--course-headline--2DAqq"}).text.strip()
                     author = course.find("div", {"class": "course-card--instructor-list--nH1OC"}).text.strip()
                     course_rating = course.find_all("span", {"class": "udlite-sr-only"})[1].text.strip()
-                    number_of_ratings = course.find("span", {"class": "udlite-heading-sm star-rating--rating-number--2o8YM"}).text.strip()
+                    if( course.find("span", {"class": "udlite-heading-sm star-rating--rating-number--2o8YM"})):
+                        number_of_ratings = course.find("span", {"class": "udlite-heading-sm star-rating--rating-number--2o8YM"}).text.strip()
+                    else:
+                        number_of_ratings = "0"
                     course_detail = course.find_all('span', {'class':'course-card--row--29Y0w'})
                     course_length = course_detail[0].text
                     number_of_lectures = course_detail[1].text
@@ -229,11 +237,16 @@ class Udemy:
         print(df)
         print("Başarıyla kaydedildi.")
 
-    def selectSortType(self):
-        self.sort_type = input("1-Recommended\n2-Popularity\n3-Newest\n4-Highest Rated\n0-Exit\n\nPlease select one: ")
+    def selectSortType(self, price):
+        if (price=="free"):
+            self.sort_type = input("1-Recommended\n2-Popularity\n3-Newest\n4-Highest Rated\n0-Exit\n\nPlease select one: ")
+        else:
+            self.sort_type = input("1-Recommended\n2-Most Reviewed\n3-Newest\n4-Highest Rated\n0-Exit\n\nPlease select one: ")
         if (self.sort_type=="1"):
             self.sort_type = "recommended"
         elif (self.sort_type=="2"):
+            self.sort_type = "most-reviewed"
+        elif (self.sort_type=="2" and self.price=="free"):
             self.sort_type = "popularity"
         elif (self.sort_type=="3"):
             self.sort_type = "newest"
@@ -348,4 +361,30 @@ https://www.udemy.com/courses/search/?lang=tr&q=python+django&sort=most-reviewed
 
 'https://www.udemy.com/courses/free/?lang={lang}&p={page_number}&sort={sort_type}'
 
+"""
+
+
+"""
+-FREE
+    \--TR
+        \---recommended
+        \---popularity
+        \---highest-rated
+        \---newest
+    \--EN
+        \---recommended
+        \---popularity
+        \---highest-rated
+        \---newest
+-SEARCH
+    \--TR
+        \---relevance
+        \---most-reviewed
+        \---highest-rated
+        \---newest
+    \--EN
+        \---recommended
+        \---most-reviewed
+        \---highest-rated
+        \---newest
 """
