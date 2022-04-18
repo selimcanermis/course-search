@@ -12,6 +12,7 @@ class courseSort:
         # self.titleSort(ws, rows_number)
         # self.authorSort(ws, rows_number)
         self.shortTable(ws, rows_number)
+        self.shortInfo(ws, rows_number)
 
     def titleSort(self, ws, rows_number):
         print("-"*100)
@@ -42,6 +43,23 @@ class courseSort:
                 print(" | " + str(hucre.value) + " | ",end="")
             print()
         print("-"*100)
+
+    def shortInfo(self, ws, rows_number):
+        print("-"*100)
+        print(" Short "*10)
+        print("-"*100)
+
+        temp = 2
+
+        for satir in ws['B2':f'I{rows_number}']:
+            for hucre in satir:
+                if(temp==2 or temp==3 or temp==4 or temp==6 or temp==9):
+                    print(" | " + str(hucre.value) + " | ")
+            print()
+            temp += 1
+        temp = 2
+        print("-"*100)
+
 
 
 
