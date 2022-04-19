@@ -11,7 +11,6 @@ class courseSort:
 
         # self.titleSort(ws, rows_number)
         # self.authorSort(ws, rows_number)
-        self.shortTable(ws, rows_number)
         self.shortInfo(ws, rows_number)
 
     def titleSort(self, ws, rows_number):
@@ -30,38 +29,26 @@ class courseSort:
             print(row-1 , " | " + str(ws.cell(row,4).value))
         print("-"*100)
 
-    #! Sütun atlamayı dene mutlaka
-    #! B2, C2, D2, F2, I2 gibi (E2, F2, G2, H2 atlanacak)
-    #! list[B2, C2, D2, F2, I2] yapılıp her döngü sonunda liste bir adım ilerleyebilir.
-
-    def shortTable(self, ws, rows_number):
-        print("-"*100)
-        print(" Short "*10)
-        print("-"*100)
-        for satir in ws['B2':f'D{rows_number}']:
-            for hucre in satir:
-                print(" | " + str(hucre.value) + " | ",end="")
-            print()
-        print("-"*100)
-
     def shortInfo(self, ws, rows_number):
         print("-"*100)
         print(" Short "*10)
         print("-"*100)
 
-        temp = 2
-
-        for satir in ws['B2':f'I{rows_number}']:
-            for hucre in satir:
-                if(temp==2 or temp==3 or temp==4 or temp==6 or temp==9):
-                    print(" | " + str(hucre.value) + " | ")
+        for i in range(2, rows_number):
+            print(" | " + str(ws[f'B{i}'].value) + " | ",end="")
+            print(" | " + str(ws[f'D{i}'].value) + " | ",end="")
+            print(" | " + str(ws[f'F{i}'].value) + " | ",end="")
+            print(" | " + str(ws[f'I{i}'].value) + " | ",end="")
             print()
-            temp += 1
-        temp = 2
+
+        """
+        for satir in ws['B2':f'D{rows_number}']:
+            for hucre in satir:
+                print(" | " + str(hucre.value) + " | ",end="")
+            print()
+        print(" | " + str(hucre.value) + " | ",end="")
         print("-"*100)
-
-
-
+        """
 
 
 
