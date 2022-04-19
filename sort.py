@@ -1,3 +1,4 @@
+from sqlite3 import Row
 from openpyxl import Workbook,load_workbook
 
 class courseSort:
@@ -11,7 +12,10 @@ class courseSort:
 
         # self.titleSort(ws, rows_number)
         # self.authorSort(ws, rows_number)
-        self.shortInfo(ws, rows_number)
+        # self.shortInfo(ws, rows_number)
+
+        keyword = "Course"
+        self.searchKeyword(ws, rows_number, keyword.lower())
 
     def titleSort(self, ws, rows_number):
         print("-"*100)
@@ -41,15 +45,28 @@ class courseSort:
             print(" | " + str(ws[f'I{i}'].value) + " | ",end="")
             print()
 
-        """
-        for satir in ws['B2':f'D{rows_number}']:
-            for hucre in satir:
-                print(" | " + str(hucre.value) + " | ",end="")
-            print()
-        print(" | " + str(hucre.value) + " | ",end="")
+    def searchKeyword(self, ws, rows_number, keyword):
         print("-"*100)
-        """
+        print(" Short "*10)
+        print("-"*100)
+        temp_keyword = ""
 
+        for i in range(2, 15):
+            for satir in ws[f'B{i}':f'C{i}']:
+                for hucre in satir:
+                    text = hucre.value.lower()
+
+                    if keyword in text:
+                        chech = True
+                        print("kelime bulundu")
+                        print(" | " + str(ws[f'B{i}'].value) + " | ",end="")
+                        print(" | " + str(ws[f'C{i}'].value) + " | ",end="")
+                        print()
+        
+        if(chech==True):
+            print("Basarili")
+        else:
+            print("Aradaginiz kelime bulunamadi.")
 
 
 course = courseSort()
