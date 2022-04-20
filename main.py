@@ -12,7 +12,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from bs4 import BeautifulSoup
-from sqlalchemy import null
 
 #headers_driver = {'User-Agent': 'Mozilla/5.0 (x11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'}
 PATH = (r'C:\Program Files\chromedriver.exe')
@@ -283,7 +282,75 @@ class Udemy:
 
         return self.price
 
-udemy_course = Udemy()
+
+
+class Patika:
+    def __init__(self):
+        options = Options()
+        options.add_argument("start-maximized")
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-notifications")
+
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument('--disable-blink-features=AutomationControlled')
+
+        #s = Service('C:\\Program Files\\chromedriver.exe')
+        driver = webdriver.Chrome(executable_path=PATH, options=options)
+        self.home_url = "https://app.patika.dev/paths"
+
+        self.course_rows = []
+
+        self.Scrap(driver)
+        driver.quit()
+
+    def Scrap(self, driver):
+        page_url = f'https://app.patika.dev/paths'
+        print("url aldım")
+        driver.get(page_url)
+        print("url girdim")
+        time.sleep(10)
+        try:
+            print("denedim")
+            WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME,'courses-list')))
+        except TimeoutException:
+            print('Loading exceeds delay time')
+        else:
+            print("elsedeyim")
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            course_list = soup.find('div', {'class': 'courses-list'})
+            courses = course_list.find_all('div', {'class': 'styles__SecondaryBox-sc-1y0wwe4-3 cttSQa course-box'})
+
+            for course in courses:
+                course_url = '{0}{1}'.format('https://app.patika.dev', course.find('a')['href'])
+                print(course_url)
+                course_title = course.find_all('h3')[1].text
+                print(course_title)
+                course_detail = course.find_all('p', {'class':'mb-2 about-course'})
+                course_length = course_detail[0].text
+
+                self.course_rows.append(
+                    [course_url, course_title, course_length]               
+                )
+
+        self.patikaRegister(self.course_rows)
+
+    def patikaRegister(self, course_rows):
+        patika_columns = ["url","Course Title","Course Length"]
+        df = pd.DataFrame(data=self.course_rows, columns=patika_columns)
+        df.to_excel(f'Patika-Courses.xlsx', index=False)
+        print(df)
+        print("Başarıyla kaydedildi.")
+        print("Patika Dev Course Kayitlari")
+
+
+
+
+# udemy_course = Udemy()
+
+patika_course = Patika()
 
 
 
