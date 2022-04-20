@@ -3,7 +3,8 @@ from openpyxl import Workbook,load_workbook
 
 class courseSort:
     def __init__(self):
-        filename = "Udemy Free (en) - (popularity).xlsx"
+        # filename = "Udemy Free (en) - (popularity).xlsx"
+        filename = "Udemy-java-(tr)-(popularity).xlsx"
         wb = load_workbook(filename)
         ws = wb.active
 
@@ -14,8 +15,10 @@ class courseSort:
         # self.authorSort(ws, rows_number)
         # self.shortInfo(ws, rows_number)
 
-        keyword = "Course"
-        self.searchKeyword(ws, rows_number, keyword.lower())
+        # keyword = "java"
+        # self.searchKeyword(ws, rows_number, keyword.lower())
+
+        self.sortPrice(ws, rows_number)
 
     def titleSort(self, ws, rows_number):
         print("-"*100)
@@ -51,14 +54,13 @@ class courseSort:
         print("-"*100)
         temp_keyword = ""
 
-        for i in range(2, 15):
+        for i in range(2, rows_number):
             for satir in ws[f'B{i}':f'C{i}']:
                 for hucre in satir:
                     text = hucre.value.lower()
 
                     if keyword in text:
                         chech = True
-                        print("kelime bulundu")
                         print(" | " + str(ws[f'B{i}'].value) + " | ",end="")
                         print(" | " + str(ws[f'C{i}'].value) + " | ",end="")
                         print()
@@ -67,6 +69,17 @@ class courseSort:
             print("Basarili")
         else:
             print("Aradaginiz kelime bulunamadi.")
+
+    def sortPrice(self, ws, rows_number):
+        print("-"*100)
+        print(" Short "*10)
+        print("-"*100)
+
+        for i in range(2, rows_number):
+            price = ws[f'J{i}'].value
+            price = float(price[1:].replace(',','.'))
+            print(price)
+            print(type(price))
 
 
 course = courseSort()
