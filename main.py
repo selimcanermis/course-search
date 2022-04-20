@@ -319,6 +319,10 @@ class Patika:
             print('Loading exceeds delay time')
         else:
             print("elsedeyim")
+            # button = driver.find_elemnt_by_class_name('mt-4 path-list').find_all('p')[0]
+            button = driver.find_element(By.XPATH, "//*[@id='react-root']/div/div[2]/div/div[1]/div[4]/p[1]")
+            button.click()
+            print("tıkladım")
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             course_list = soup.find('div', {'class': 'courses-list'})
             courses = course_list.find_all('div', {'class': 'styles__SecondaryBox-sc-1y0wwe4-3 cttSQa course-box'})
